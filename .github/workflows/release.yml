@@ -1,0 +1,31 @@
+name: 发布版本
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-all:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      - name: 全版本构建
+        run: |
+          chmod +x scripts/build-all-versions.sh
+          ./scripts/build-all-versions.sh
+      - name: 打包发布
+        run: |
+          mkdir release
+          cp builds/*.jar release/
+          echo "# AI Baritone Helper ${{ github.ref_name }}" > release/RELEASE_NOTES.md
+          echo "构建时间: $(date)" >> release/RELEASE_NOTES.md
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: release/*.jar
+          body_path: release/RELEASE_NOTES.md
