@@ -1,4 +1,4 @@
-﻿package com.example.aibaritone.config.status;
+package com.example.aibaritone.config.status;
 
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
