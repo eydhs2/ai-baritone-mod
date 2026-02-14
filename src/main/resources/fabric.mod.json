@@ -1,7 +1,7 @@
-﻿{
+{
   "schemaVersion": 1,
   "id": "ai-baritone",
-  "version": "",
+  "version": "${version}",
   "name": "AI Baritone Helper",
   "description": "大模型驱动的智能Baritone助手 - 自动寻路/战斗/逃生，支持8大AI模型",
   "authors": ["Eydhs2"],
@@ -36,3 +36,4 @@
     "ollama": "本地大模型支持"
   }
 }
+
