@@ -1,4 +1,4 @@
-﻿package com.example.aibaritone.handler;
+package com.example.aibaritone.handler;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
@@ -15,23 +15,9 @@ public class CommandExecutor {
                 false
             );
             
-            client.setScreen(new net.minecraft.client.gui.screen.ChatScreen(""));
-            
-            if (client.currentScreen instanceof net.minecraft.client.gui.screen.ChatScreen) {
-                var chatScreen = (net.minecraft.client.gui.screen.ChatScreen) client.currentScreen;
-                chatScreen.chatField.setText(command);
-                
-                client.execute(() -> {
-                    chatScreen.sendMessage(command);
-                });
-            }
+            // 直接发送指令到聊天框
+            client.player.networkHandler.sendChatCommand(command.replace("#", ""));
         });
     }
-    
-    public static void sendFeedback(String message) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (client.player != null) {
-            client.player.sendMessage(Text.of(message), false);
-        }
-    }
 }
+
