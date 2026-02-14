@@ -1,0 +1,25 @@
+name: 自动检测新Minecraft版本
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-new-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 获取官方版本列表
+        id: mcmeta
+        run: |
+          curl -s https://piston-meta.mojang.com/mc/game/version_manifest_v2.json > versions.json
+          LATEST_RELEASE=$(jq -r '.latest.release' versions.json)
+          echo "release=" >> $GITHUB_OUTPUT
+      - name: 创建Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "feat: 添加 Minecraft ${{ steps.mcmeta.outputs.release }} 支持"
+          title: "支持新版本 Minecraft ${{ steps.mcmeta.outputs.release }}"
+          branch: feature/mc-${{ steps.mcmeta.outputs.release }}
+          base: main
