@@ -1,4 +1,4 @@
-﻿package com.example.aibaritone.config.template;
+package com.example.aibaritone.config.template;
 
 import java.util.*;
 
@@ -58,3 +58,4 @@ public class CommandTemplate {
         return template;
     }
 }
+
