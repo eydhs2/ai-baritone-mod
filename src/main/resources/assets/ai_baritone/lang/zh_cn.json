@@ -1,4 +1,4 @@
-﻿{
+{
   "text.autoconfig.ai_baritone.title": "AI Baritone 助手",
   "text.autoconfig.ai_baritone.option.enableAICompletion": "启用AI补全",
   "text.autoconfig.ai_baritone.option.serverPort": "本地监听端口",
