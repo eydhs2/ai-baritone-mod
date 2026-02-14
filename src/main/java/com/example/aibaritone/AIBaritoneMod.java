@@ -1,4 +1,4 @@
-﻿package com.example.aibaritone;
+package com.example.aibaritone;
 
 import com.example.aibaritone.config.ModConfig;
 import com.example.aibaritone.handler.ExternalInputHandler;
@@ -13,9 +13,12 @@ public class AIBaritoneMod implements ClientModInitializer {
     
     @Override
     public void onInitializeClient() {
+        // 注册配置
         AutoConfig.register(ModConfig.class, JanksonConfigSerializer::new);
         
+        // 注册客户端生命周期事件
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            System.out.println("✅ AI Baritone Mod 已启动");
             ExternalInputHandler.start();
             PlayerStatusMonitor.init();
             PlayerTakeoverManager.init();
