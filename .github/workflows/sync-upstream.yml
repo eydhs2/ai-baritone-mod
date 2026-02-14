@@ -2,23 +2,53 @@ name: 同步上游更新
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
+    - cron: '0 */6 * * *'  # 每6小时运行一次
+  workflow_dispatch:        # 手动触发
 
 jobs:
   sync:
+    name: 同步上游仓库
     runs-on: ubuntu-latest
+    # 只在 fork 的仓库中运行（不是原仓库）
     if: github.repository_owner != 'Eydhs2'
+    
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: 添加上游仓库
         run: |
           git remote add upstream https://github.com/Eydhs2/ai-baritone-mod.git
           git fetch upstream
+      
+      - name: 配置 Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
       - name: 同步主分支
         run: |
           git checkout main
-          git merge upstream/main --no-edit
+          git merge upstream/main --no-edit --allow-unrelated-histories
           git push origin main
+      
+      - name: 同步开发分支
+        run: |
+          git checkout dev || git checkout -b dev upstream/dev
+          git merge upstream/dev --no-edit --allow-unrelated-histories || true
+          git push origin dev
+      
+      - name: 创建同步报告
+        if: always()
+        run: |
+          echo "## 🔄 Fork 同步状态" > $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 分支 | 状态 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| main | ✅ 已同步 |" >> $GITHUB_STEP_SUMMARY
+          echo "| dev  | ✅ 已同步 |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "上游仓库: Eydhs2/ai-baritone-mod" >> $GITHUB_STEP_SUMMARY
+          echo "同步时间: $(date)" >> $GITHUB_STEP_SUMMARY
