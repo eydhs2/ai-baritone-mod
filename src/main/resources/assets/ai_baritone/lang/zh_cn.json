@@ -1,0 +1,12 @@
+﻿{
+  "text.autoconfig.ai_baritone.title": "AI Baritone 助手",
+  "text.autoconfig.ai_baritone.option.enableAICompletion": "启用AI补全",
+  "text.autoconfig.ai_baritone.option.serverPort": "本地监听端口",
+  "text.autoconfig.ai_baritone.option.ai": "大模型配置",
+  "text.autoconfig.ai_baritone.option.ai.provider": "AI服务商",
+  "text.autoconfig.ai_baritone.option.ai.apiKey": "API密钥",
+  "text.autoconfig.ai_baritone.option.ai.apiEndpoint": "API地址",
+  "text.autoconfig.ai_baritone.option.ai.modelName": "模型名称",
+  "text.autoconfig.ai_baritone.option.playerStatus": "状态监控",
+  "text.autoconfig.ai_baritone.option.playerControl": "行为接管"
+}
