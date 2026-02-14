@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 set -e
 
 MC_VERSION=$1
@@ -38,3 +38,4 @@ sed -i "s/^cloth_version=.*/cloth_version=$CLOTH/" gradle.properties
 sed -i "s/^modmenu_version=.*/modmenu_version=$MODMENU/" gradle.properties
 
 echo "✅ 已配置 Minecraft $MC_VERSION"
+
