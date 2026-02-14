@@ -17,14 +17,14 @@ jobs:
       - id: set-matrix
         run: |
           VERSIONS=$(jq -c '.depends.minecraft' src/main/resources/fabric.mod.json)
-          echo "matrix={\"version\":}" >> $GITHUB_OUTPUT
+          echo "matrix={\"version\":$VERSIONS}" >> $GITHUB_OUTPUT
 
   build:
     needs: detect-versions
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.detect-versions.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.detect-versions.outputs.matrix) }}
     
     steps:
       - uses: actions/checkout@v4
@@ -32,12 +32,144 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 17
-      - name: 配置版本 ${{ matrix.version }}
+      - name: 构建 Minecraft ${{ matrix.version }}
         run: |
-          chmod +x scripts/configure-version.sh
-          ./scripts/configure-version.sh ${{ matrix.version }}
-      - name: 构建模组
-        run: |
+          # 版本配置映射表
+          case "${{ matrix.version }}" in
+            1.15.2)
+              YARN="1.15.2+build.14"
+              LOADER="0.14.22"
+              FABRIC="0.44.0+1.18"
+              CLOTH="6.4.90"
+              MODMENU="3.2.5"
+              ;;
+            1.16.5)
+              YARN="1.16.5+build.9"
+              LOADER="0.14.22"
+              FABRIC="0.46.6+1.19"
+              CLOTH="6.4.90"
+              MODMENU="3.2.5"
+              ;;
+            1.17.1)
+              YARN="1.17.1+build.14"
+              LOADER="0.14.22"
+              FABRIC="0.55.3+1.19"
+              CLOTH="6.4.90"
+              MODMENU="3.2.5"
+              ;;
+            1.18.2)
+              YARN="1.18.2+build.4"
+              LOADER="0.14.22"
+              FABRIC="0.77.0+1.18.2"
+              CLOTH="6.4.90"
+              MODMENU="3.2.5"
+              ;;
+            1.19.2)
+              YARN="1.19.2+build.28"
+              LOADER="0.14.22"
+              FABRIC="0.76.0+1.19.2"
+              CLOTH="8.5.103"
+              MODMENU="4.1.1"
+              ;;
+            1.19.4)
+              YARN="1.19.4+build.5"
+              LOADER="0.14.22"
+              FABRIC="0.76.0+1.19.4"
+              CLOTH="11.1.118"
+              MODMENU="5.2.0"
+              ;;
+            1.20.1)
+              YARN="1.20.1+build.10"
+              LOADER="0.14.24"
+              FABRIC="0.88.1+1.20.1"
+              CLOTH="11.1.118"
+              MODMENU="7.0.1"
+              ;;
+            1.20.4)
+              YARN="1.20.4+build.3"
+              LOADER="0.15.11"
+              FABRIC="0.91.1+1.20.4"
+              CLOTH="11.1.118"
+              MODMENU="7.2.0"
+              ;;
+            1.20.6)
+              YARN="1.20.6+build.3"
+              LOADER="0.15.11"
+              FABRIC="0.98.0+1.20.6"
+              CLOTH="14.0.127"
+              MODMENU="8.0.0"
+              ;;
+            1.21)
+              YARN="1.21+build.1"
+              LOADER="0.15.11"
+              FABRIC="0.100.0+1.21"
+              CLOTH="15.0.140"
+              MODMENU="11.0.0"
+              ;;
+            1.21.1)
+              YARN="1.21.1+build.9"
+              LOADER="0.16.0"
+              FABRIC="0.105.0+1.21.1"
+              CLOTH="15.0.140"
+              MODMENU="11.0.1"
+              ;;
+            1.21.3)
+              YARN="1.21.3+build.2"
+              LOADER="0.16.5"
+              FABRIC="0.108.0+1.21.3"
+              CLOTH="15.0.140"
+              MODMENU="13.0.0"
+              ;;
+            1.21.4)
+              YARN="1.21.4+build.2"
+              LOADER="0.16.7"
+              FABRIC="0.110.0+1.21.4"
+              CLOTH="15.0.140"
+              MODMENU="13.0.1"
+              ;;
+            1.21.5)
+              YARN="1.21.5+build.1"
+              LOADER="0.16.9"
+              FABRIC="0.112.0+1.21.5"
+              CLOTH="15.0.140"
+              MODMENU="13.0.1"
+              ;;
+            1.21.6)
+              YARN="1.21.6+build.1"
+              LOADER="0.16.9"
+              FABRIC="0.113.0+1.21.6"
+              CLOTH="15.0.140"
+              MODMENU="13.0.1"
+              ;;
+            1.21.7)
+              YARN="1.21.7+build.1"
+              LOADER="0.16.9"
+              FABRIC="0.114.0+1.21.7"
+              CLOTH="15.0.140"
+              MODMENU="13.0.1"
+              ;;
+            1.21.8)
+              YARN="1.21.8+build.2"
+              LOADER="0.16.9"
+              FABRIC="0.115.0+1.21.8"
+              CLOTH="15.0.140"
+              MODMENU="13.0.1"
+              ;;
+            *)
+              echo "❌ 未知版本: ${{ matrix.version }}"
+              exit 1
+              ;;
+          esac
+          
+          # 更新 gradle.properties
+          sed -i "s/^minecraft_version=.*/minecraft_version=${{ matrix.version }}/" gradle.properties
+          sed -i "s/^yarn_mappings=.*/yarn_mappings=$YARN/" gradle.properties
+          sed -i "s/^loader_version=.*/loader_version=$LOADER/" gradle.properties
+          sed -i "s/^fabric_version=.*/fabric_version=$FABRIC/" gradle.properties
+          sed -i "s/^cloth_version=.*/cloth_version=$CLOTH/" gradle.properties
+          sed -i "s/^modmenu_version=.*/modmenu_version=$MODMENU/" gradle.properties
+          
+          # 构建
           chmod +x gradlew
           ./gradlew clean build
       - uses: actions/upload-artifact@v4
