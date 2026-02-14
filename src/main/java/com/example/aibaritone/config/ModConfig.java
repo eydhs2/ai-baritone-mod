@@ -1,4 +1,4 @@
-﻿package com.example.aibaritone.config;
+package com.example.aibaritone.config;
 
 import com.example.aibaritone.config.ai.AIConfig;
 import com.example.aibaritone.config.status.PlayerStatusConfig;
