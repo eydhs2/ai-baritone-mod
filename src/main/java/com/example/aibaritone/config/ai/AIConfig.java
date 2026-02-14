@@ -1,4 +1,4 @@
-﻿package com.example.aibaritone.config.ai;
+package com.example.aibaritone.config.ai;
 
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 
@@ -93,3 +93,4 @@ public class AIConfig {
         }
     }
 }
+
