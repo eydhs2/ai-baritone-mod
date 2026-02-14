@@ -1,0 +1,46 @@
+name: 构建 & 测试
+
+on:
+  push:
+    branches: [ main, dev, master ]
+  pull_request:
+    branches: [ main, dev, master ]
+  workflow_dispatch:
+
+jobs:
+  detect-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: set-matrix
+        run: |
+          VERSIONS=$(jq -c '.depends.minecraft' src/main/resources/fabric.mod.json)
+          echo "matrix={\"version\":}" >> $GITHUB_OUTPUT
+
+  build:
+    needs: detect-versions
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-versions.outputs.matrix) }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      - name: 配置版本 ${{ matrix.version }}
+        run: |
+          chmod +x scripts/configure-version.sh
+          ./scripts/configure-version.sh ${{ matrix.version }}
+      - name: 构建模组
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-baritone-${{ matrix.version }}
+          path: build/libs/*.jar
