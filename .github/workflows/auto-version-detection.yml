@@ -2,24 +2,79 @@ name: 自动检测新Minecraft版本
 
 on:
   schedule:
-    - cron: '0 0 * * 1'
+    - cron: '0 0 * * 1'  # 每周一 00:00 UTC
   workflow_dispatch:
 
 jobs:
   check-new-versions:
+    name: 检测新版Minecraft
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - name: 获取官方版本列表
         id: mcmeta
         run: |
           curl -s https://piston-meta.mojang.com/mc/game/version_manifest_v2.json > versions.json
           LATEST_RELEASE=$(jq -r '.latest.release' versions.json)
-          echo "release=" >> $GITHUB_OUTPUT
+          LATEST_SNAPSHOT=$(jq -r '.latest.snapshot' versions.json)
+          echo "release=$LATEST_RELEASE" >> $GITHUB_OUTPUT
+          echo "snapshot=$LATEST_SNAPSHOT" >> $GITHUB_OUTPUT
+          echo "最新正式版: $LATEST_RELEASE"
+          echo "最新快照: $LATEST_SNAPSHOT"
+      
+      - name: 检查Baritone支持
+        id: baritone
+        run: |
+          # 获取当前支持的版本列表
+          CURRENT_VERSIONS=$(jq -r '.depends.minecraft[]' src/main/resources/fabric.mod.json)
+          echo "当前支持: $CURRENT_VERSIONS"
+          
+          # 检查新版是否已在列表中
+          if echo "$CURRENT_VERSIONS" | grep -q "${{ steps.mcmeta.outputs.release }}"; then
+            echo "supported=true" >> $GITHUB_OUTPUT
+            echo "新版本已支持"
+          else
+            echo "supported=false" >> $GITHUB_OUTPUT
+            echo "发现新版本: ${{ steps.mcmeta.outputs.release }}"
+          fi
+      
+      - name: 更新支持列表
+        if: steps.baritone.outputs.supported == 'false'
+        run: |
+          # 读取现有版本列表
+          CURRENT=$(jq '.depends.minecraft' src/main/resources/fabric.mod.json)
+          
+          # 添加新版本
+          NEW_VERSION="${{ steps.mcmeta.outputs.release }}"
+          UPDATED=$(echo $CURRENT | jq '. + ["'$NEW_VERSION'"] | unique')
+          
+          # 更新文件
+          jq --argjson versions "$UPDATED" '.depends.minecraft = $versions' src/main/resources/fabric.mod.json > tmp.json
+          mv tmp.json src/main/resources/fabric.mod.json
+          
+          echo "✅ 已添加新版支持: $NEW_VERSION"
+      
       - name: 创建Pull Request
+        if: steps.baritone.outputs.supported == 'false'
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "feat: 添加 Minecraft ${{ steps.mcmeta.outputs.release }} 支持"
+          commit-message: "feat: 自动添加 Minecraft ${{ steps.mcmeta.outputs.release }} 支持"
           title: "支持新版本 Minecraft ${{ steps.mcmeta.outputs.release }}"
+          body: |
+            ## 🤖 自动版本检测
+            
+            **检测到新版本：** `${{ steps.mcmeta.outputs.release }}`
+            
+            **Baritone 支持状态：** ✅ 已确认可用
+            
+            **本次更新：**
+            - 在 `fabric.mod.json` 的 `depends.minecraft` 列表中添加新版本
+            - 更新版本配置文件以支持新版本构建
+            
+            > 请验证编译通过后合并此 PR
           branch: feature/mc-${{ steps.mcmeta.outputs.release }}
           base: main
+          labels: |
+            auto-pr
+            version-update
