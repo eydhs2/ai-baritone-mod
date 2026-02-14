@@ -1,4 +1,4 @@
-﻿plugins {
+plugins {
     id 'fabric-loom' version '1.7.2'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
@@ -19,35 +19,26 @@ repositories {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:"
-    mappings "net.fabricmc:yarn::v2"
-    modImplementation "net.fabricmc:fabric-loader:"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:"
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     
-    def baritoneFileId = getBaritoneFileId(project.minecraft_version)
-    modImplementation "curse.maven:baritone-391708:"
+    // Baritone API - 版本在 workflow 中动态配置
+    modImplementation "curse.maven:baritone-391708:6416791"
     
-    modApi("me.shedaniel.cloth:cloth-config-fabric:") {
+    // Cloth Config
+    modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_version}") {
         exclude(group: "net.fabricmc.fabric-api")
     }
-    include "me.shedaniel.cloth:cloth-config-fabric:"
+    include "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_version}"
     
-    modImplementation "com.terraformersmc:modmenu:"
+    // ModMenu
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
     
+    // HTTP 客户端（用于AI调用）
     include modImplementation("com.squareup.okhttp3:okhttp:4.12.0")
     include modImplementation("org.json:json:20240303")
-}
-
-def getBaritoneFileId(String mcVersion) {
-    def versions = [
-        "1.15.2": "3386291", "1.16.5": "3386295", "1.17.1": "3386300",
-        "1.18.2": "3674704", "1.19.2": "4136795", "1.19.4": "4136800",
-        "1.20.1": "4760964", "1.20.4": "5038890", "1.20.6": "5450142",
-        "1.21":   "5702821", "1.21.1": "5702821", "1.21.3": "5888771",
-        "1.21.4": "6013712", "1.21.5": "6160010", "1.21.6": "6265642",
-        "1.21.7": "6357793", "1.21.8": "6416791"
-    ]
-    return versions[mcVersion] ?: "6416791"
 }
 
 processResources {
@@ -70,4 +61,9 @@ remapJar {
 
 java {
     withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+    it.options.release = 17
 }
