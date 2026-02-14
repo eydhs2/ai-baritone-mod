@@ -1,0 +1,17 @@
+# 设置脚本文件的行尾为LF（Linux格式）
+*.sh text eol=lf
+scripts/*.sh text eol=lf
+
+# 设置Java文件的行尾为LF
+*.java text eol=lf
+
+# 设置JSON文件的行尾为LF
+*.json text eol=lf
+
+# 设置YAML文件的行尾为LF
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# 设置Gradle文件的行尾为LF
+*.gradle text eol=lf
+gradle.properties text eol=lf
